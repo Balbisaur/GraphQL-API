@@ -1,7 +1,6 @@
 import graphene
 from graphene_sqlalchemy import SQLAlchemyObjectType
 from models import Product as ProductModel
-from models import Base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
 
@@ -26,12 +25,12 @@ class Query(graphene.ObjectType):
     def resolve_search_products(self, info, name=None, category=None):
         query = session.query(ProductModel)
         if name:
-            query = query.filter(ProductModel.name.contains(name))
+            query = query.filter(ProductModel.name.ilike(f'%{name}%'))
         if category:
-            query = query.filter(ProductModel.category.contains(category))
+            query = query.filter(ProductModel.category.ilike(f'%{category}%'))
         return query.all()
 
-# Define Mutations
+# Defining Mutations
 class CreateProduct(graphene.Mutation):
     class Arguments:
         name = graphene.String(required=True)
@@ -92,3 +91,4 @@ class Mutation(graphene.ObjectType):
     delete_product = DeleteProduct.Field()
 
 schema = graphene.Schema(query=Query, mutation=Mutation)
+
